@@ -72,7 +72,7 @@ export default defineSchema({
     prompt: v.string(),
     model: v.string(),
     status: v.string(),
-    questions: v.array(v.string()),
+    questions: v.optional(v.array(v.string())),
     aiResponse: v.union(v.string(), v.null()),
     createdAt: v.string(),
     savedStatus: v.boolean(),
