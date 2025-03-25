@@ -84,7 +84,7 @@ export const createCheckoutSession = action({
     // Make sure we have a valid frontend URL
     const frontendUrl =
       process.env.FRONTEND_URL ||
-      "http://localhost:5173";
+      "https://app.educora.com.br";
 
     // Log do price ID para debug
     console.log(`Criando checkout session com price ID: ${args.priceId}`);
@@ -98,7 +98,7 @@ export const createCheckoutSession = action({
       customer_email: user.email,
       allow_promotion_codes: true,
       success_url: `${frontendUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${frontendUrl}/cancel`,
+      cancel_url: `${frontendUrl}/`,
     });
 
     return checkout;
