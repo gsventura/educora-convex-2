@@ -47,15 +47,15 @@ export function Footer() {
             <ul className="space-y-2">
               <li>
                 <a
-                  href="/privacy"
+                  href="/privacidade"
                   className="text-gray-600 hover:text-gray-900"
                 >
-                  Privacy Policy
+                  Política de Privacidade
                 </a>
               </li>
               <li>
-                <a href="/terms" className="text-gray-600 hover:text-gray-900">
-                  Terms of Service
+                <a href="/termos" className="text-gray-600 hover:text-gray-900">
+                  Termos de Uso
                 </a>
               </li>
             </ul>

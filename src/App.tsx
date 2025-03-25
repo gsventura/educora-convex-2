@@ -25,6 +25,10 @@ import DicasAvancadas from "./pages/recursos/dicas-avancadas";
 import FAQ from "./pages/recursos/faq";
 import RecursosLayout from "./components/layouts/RecursosLayout";
 
+// Importando páginas legais
+import PoliticaPrivacidade from "./pages/privacidade";
+import TermosDeUso from "./pages/termos";
+
 function App() {
   // Store user in database when they log in
   useStoreUserEffect();
@@ -78,6 +82,10 @@ function App() {
             <Route path="dicas-avancadas" element={<DicasAvancadas />} />
             <Route path="faq" element={<FAQ />} />
           </Route>
+          
+          {/* Rotas para páginas legais */}
+          <Route path="/privacidade" element={<PoliticaPrivacidade />} />
+          <Route path="/termos" element={<TermosDeUso />} />
         </Routes>
         {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
         <Toaster />
