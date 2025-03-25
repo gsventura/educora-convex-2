@@ -68,7 +68,7 @@ export default defineSchema({
     userId: v.id("users"),
     subjectId: v.optional(v.id("subjects")),
     subject: v.string(),
-    difficulty: v.string(),
+    difficulty: v.optional(v.string()),
     prompt: v.string(),
     model: v.string(),
     status: v.string(),
