@@ -26,10 +26,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ClerkProvider 
       publishableKey={PUBLISHABLE_KEY}
-      afterSignOutUrl="/"
-      redirectUrl="/dashboard"
-      signInUrl="/sign-in"
-      signUpUrl="/sign-up"
       localization={ptBR}
     >
     <ConvexProviderWithClerk client={convex} useAuth={useAuth}>

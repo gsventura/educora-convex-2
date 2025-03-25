@@ -19,8 +19,6 @@ export default function SignUpPage() {
             <ClerkSignUp 
               routing="path"
               path="/sign-up"
-              signInUrl="/sign-in"
-              fallbackRedirectUrl="/dashboard"
               appearance={{
                 elements: {
                   formButtonPrimary: 

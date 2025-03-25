@@ -13,6 +13,8 @@ import ProtectedRoute from "./components/wrappers/ProtectedRoute";
 import AuthRoute from "./components/wrappers/AuthRoute";
 import { useStoreUserEffect } from "./utils/useStoreUserEffect";
 import { Toaster } from "@/components/ui/toaster";
+import SignInSSOCallback from "./pages/sign-in/sso-callback";
+import SignUpSSOCallback from "./pages/sign-up/sso-callback";
 
 // Importando as páginas de recursos
 import RecursosHub from "./pages/recursos";
@@ -54,7 +56,8 @@ function App() {
           <Route path="/nao-assinante" element={<NaoAssinante />} />
           <Route path="/sign-in" element={<SignIn />} />
           <Route path="/sign-up" element={<SignUp />} />
-          <Route path="/sign-in/sso-callback" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/sign-in/sso-callback" element={<SignInSSOCallback />} />
+          <Route path="/sign-up/sso-callback" element={<SignUpSSOCallback />} />
           <Route path="/color-demo" element={<ColorDemoPage />} />
           
           {/* Rotas para a Central de Recursos */}
