@@ -1,4 +1,5 @@
 import { ClerkProvider, useAuth } from "@clerk/clerk-react";
+import { ptBR } from "@clerk/localizations";
 import { ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import React from "react";
@@ -23,7 +24,11 @@ if (!PUBLISHABLE_KEY) {
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
+    <ClerkProvider 
+      publishableKey={PUBLISHABLE_KEY} 
+      afterSignOutUrl="/"
+      localization={ptBR}
+    >
     <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
       <BrowserRouter basename={basename}>
         <App />

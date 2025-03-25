@@ -17,6 +17,7 @@ import type * as answers from "../answers.js";
 import type * as http from "../http.js";
 import type * as openai from "../openai.js";
 import type * as questions from "../questions.js";
+import type * as recursos from "../recursos.js";
 import type * as savedItems from "../savedItems.js";
 import type * as studyPlans from "../studyPlans.js";
 import type * as subjects from "../subjects.js";
@@ -36,6 +37,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   openai: typeof openai;
   questions: typeof questions;
+  recursos: typeof recursos;
   savedItems: typeof savedItems;
   studyPlans: typeof studyPlans;
   subjects: typeof subjects;

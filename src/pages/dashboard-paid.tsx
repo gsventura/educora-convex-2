@@ -1,7 +1,6 @@
 import { useUser } from "@clerk/clerk-react";
 import { useAction, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { Footer } from "../components/footer";
 import { Navbar } from "../components/navbar";
 
 export default function DashboardPaid() {
@@ -32,13 +31,13 @@ export default function DashboardPaid() {
                 <div className="container mx-auto px-4 py-8">
                     <div className="mb-8">
                         <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-                        <p className="text-gray-600 mt-2">View and manage your account information</p>
+                        <p className="text-gray-600 mt-2">Veja e gerencie as informações da sua conta.</p>
                         <div className="mt-[1rem]">
                             <button
                                 onClick={handleManageSubscription}
                                 className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
                             >
-                                Manage Subscription
+                                Gerenciar Assinatura
                             </button>
                         </div>
                     </div>
@@ -113,17 +112,17 @@ export default function DashboardPaid() {
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Plan Amount</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Valor do Plano</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 {formatCurrency(subscription?.amount, subscription?.currency)}
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Billing Interval</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Intervalo de Cobrança</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{subscription?.interval || "—"}</td>
                                         </tr>
                                         <tr>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Current Period</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Período Atual</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 {formatDate(subscription?.currentPeriodStart)} - {formatDate(subscription?.currentPeriodEnd)}
                                             </td>
@@ -135,15 +134,15 @@ export default function DashboardPaid() {
                                         {subscription?.canceledAt && (
                                             <>
                                                 <tr>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Canceled At</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Cancelado em </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(subscription?.canceledAt)}</td>
                                                 </tr>
                                                 <tr>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Cancellation Reason</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Razão de Cancelamento</td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{subscription?.customerCancellationReason || "—"}</td>
                                                 </tr>
                                                 <tr>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Cancellation Comment</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Comentário do Cliente</td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{subscription?.customerCancellationComment || "—"}</td>
                                                 </tr>
                                             </>
@@ -181,7 +180,6 @@ export default function DashboardPaid() {
                     </div>
                 </div>
             </main>
-            <Footer />
         </div>
     );
 }

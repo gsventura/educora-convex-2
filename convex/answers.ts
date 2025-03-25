@@ -6,6 +6,8 @@ export const generateAnswer = mutation({
   args: {
     questionText: v.string(),
     imageUrl: v.optional(v.string()),
+    aiResponse: v.optional(v.string()),
+    model: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -32,16 +34,12 @@ export const generateAnswer = mutation({
     const userCredits = user.credits || 0;
 
     if (!hasActiveSubscription && userCredits <= 0) {
-      throw new Error("No credits remaining. Please upgrade your plan.");
+      throw new Error("Você não tem mais créditos. Por favor, atualize seu plano.");
     }
 
-    // In a real implementation, this would call an AI service
-    // For now, we'll generate a mock answer
-    let mockAnswer = "";
-    if (args.imageUrl) {
-      mockAnswer = `Based on the image you uploaded, I can see this is a question about mathematical principles. The solution requires applying the correct formula and calculating step by step.\n\nFirst, we need to understand what the question is asking. It appears to be asking about calculating a specific value using the given information.\n\nThe correct approach would be to use the formula relevant to this type of problem, substitute the values, and solve for the unknown variable.\n\nThe answer is...`;
-    } else {
-      mockAnswer = `Here's the explanation for your question:\n\n${args.questionText}\n\nThe answer involves understanding the key concepts and applying them correctly. First, you need to identify the main elements of the problem. Then, analyze how they interact with each other. Finally, apply the relevant formulas or principles to arrive at the solution.\n\nStep 1: Identify the variables and constants in the problem.\nStep 2: Set up the appropriate equations based on the principles involved.\nStep 3: Solve the equations to find the answer.\n\nThe correct approach would be to...`;
+    // Verifica se temos uma resposta da IA
+    if (!args.aiResponse) {
+      throw new Error("No AI response provided.");
     }
 
     // Deduct a credit if user is on free tier
@@ -54,9 +52,9 @@ export const generateAnswer = mutation({
       userId: user._id,
       questionText: args.questionText,
       imageUrl: args.imageUrl,
-      model: "gpt-4", // Mock model name
+      model: args.model || "gpt-4o",
       status: "completed",
-      aiResponse: mockAnswer,
+      aiResponse: args.aiResponse,
       createdAt: new Date().toISOString(),
       savedStatus: false,
       savedTags: [],
@@ -64,7 +62,7 @@ export const generateAnswer = mutation({
 
     return {
       id: correctionId,
-      answer: mockAnswer,
+      answer: args.aiResponse,
       remainingCredits: hasActiveSubscription ? "unlimited" : userCredits - 1,
     };
   },

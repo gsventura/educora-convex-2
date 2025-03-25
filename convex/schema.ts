@@ -16,6 +16,7 @@ export default defineSchema({
     currency: v.optional(v.string()),
     interval: v.optional(v.string()),
     status: v.optional(v.string()),
+    planType: v.optional(v.string()), // "free", "basic", "pro"
     currentPeriodStart: v.optional(v.number()),
     currentPeriodEnd: v.optional(v.number()),
     cancelAtPeriodEnd: v.optional(v.boolean()),

@@ -1,7 +1,6 @@
 import { useUser } from "@clerk/clerk-react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { Footer } from "../components/footer";
 import { Navbar } from "../components/navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileQuestion, MessageSquare, BookOpen, Calendar } from "lucide-react";
@@ -36,35 +35,38 @@ export default function Dashboard() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-gray-600 mt-1">
-              Welcome back, {userData?.name || user?.fullName || "Student"}!
-            </p>
           </div>
 
           <Card className="w-full md:w-auto mt-4 md:mt-0">
             <CardHeader className="py-2">
               <CardTitle className="text-sm font-medium">
-                Subscription Status
+                Status da Assinatura
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium">
-                    {subscription?.status === "active" ? "Active" : "Free Plan"}
+                    {subscription?.status === "active" 
+                      ? `Plano ${subscription.planType === "basic" ? "Básico" : "Pro"}` 
+                      : "Plano Grátis"}
                   </p>
                   <p className="text-xs text-gray-500">
                     {subscription?.status === "active"
-                      ? "Unlimited access"
-                      : `${userCreditInfo?.credits || 0} credits remaining`}
+                      ? "Acesso ilimitado"
+                      : `${userCreditInfo?.credits || 0} créditos restantes`}
                   </p>
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => navigate("/not-subscribed")}
+                  onClick={() => 
+                    subscription?.status === "active" 
+                      ? navigate("/dashboard-paid") 
+                      : navigate("/nao-assinante")
+                  }
                 >
-                  {subscription?.status === "active" ? "Manage" : "Upgrade"}
+                  {subscription?.status === "active" ? "Gerenciar" : "Atualizar"}
                 </Button>
               </div>
             </CardContent>
@@ -78,32 +80,32 @@ export default function Dashboard() {
               className="flex items-center gap-2"
             >
               <FileQuestion className="h-4 w-4" />
-              <span className="hidden md:inline">Question Generator</span>
-              <span className="inline md:hidden">Questions</span>
+              <span className="hidden md:inline">Gerador de Questões</span>
+              <span className="inline md:hidden">Questões</span>
             </TabsTrigger>
             <TabsTrigger
               value="answer-assistant"
               className="flex items-center gap-2"
             >
               <MessageSquare className="h-4 w-4" />
-              <span className="hidden md:inline">Answer Assistant</span>
-              <span className="inline md:hidden">Answers</span>
+              <span className="hidden md:inline">Assistente de Respostas</span>
+              <span className="inline md:hidden">Respostas</span>
             </TabsTrigger>
             <TabsTrigger
               value="saved-questions"
               className="flex items-center gap-2"
             >
               <BookOpen className="h-4 w-4" />
-              <span className="hidden md:inline">Saved Questions</span>
-              <span className="inline md:hidden">Saved</span>
+              <span className="hidden md:inline">Questões Salvas</span>
+              <span className="inline md:hidden">Salvos</span>
             </TabsTrigger>
             <TabsTrigger
               value="study-plans"
               className="flex items-center gap-2"
             >
               <Calendar className="h-4 w-4" />
-              <span className="hidden md:inline">Study Plans</span>
-              <span className="inline md:hidden">Plans</span>
+              <span className="hidden md:inline">Planos de Estudo</span>
+              <span className="inline md:hidden">Planos</span>
             </TabsTrigger>
           </TabsList>
 
@@ -124,7 +126,6 @@ export default function Dashboard() {
           </TabsContent>
         </Tabs>
       </main>
-      <Footer />
     </div>
   );
 }

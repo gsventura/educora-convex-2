@@ -49,22 +49,70 @@ export const generateAnswer = action({
   args: {
     questionText: v.string(),
     model: v.string(),
+    imageUrl: v.optional(v.string()),
   },
   handler: async (_, args) => {
     try {
-      const response = await openai.chat.completions.create({
-        model: args.model,
-        messages: [
+      // Cria a mensagem de sistema baseada no tipo de entrada
+      const systemMessage = {
+        role: "system",
+        content:
+          "Você é um tutor educacional especializado em fornecer explicações detalhadas e didáticas para questões acadêmicas. Sua função é analisar a pergunta ou imagem do estudante e fornecer uma resposta completa, estruturada e educativa." +
+          (args.imageUrl 
+            ? " Quando analisar imagens, preste atenção especial a: fórmulas matemáticas, diagramas científicos, gráficos estatísticos, texto manuscrito, questões de múltipla escolha, equações e expressões algébricas, problemas geométricos, tabelas de dados, mapas conceituais, e qualquer outro elemento visual educacional. Se identificar uma questão com múltipla escolha, indique claramente qual seria a resposta correta e explique o raciocínio por trás disso." 
+            : ""),
+      };
+
+      // Prepara as mensagens do usuário
+      let userMessages;
+
+      // Se tiver uma imagem, usa o formato de mensagem com imagem
+      if (args.imageUrl) {
+        let promptText = args.questionText;
+        
+        // Se não houver texto específico do usuário, usamos um prompt mais detalhado
+        if (!args.questionText || args.questionText === "Analise esta imagem e explique detalhadamente o que vê") {
+          promptText = "Analise esta imagem cuidadosamente e forneça uma explicação educacional detalhada. " +
+            "Se for uma questão, resolva-a passo a passo. " +
+            "Se for uma fórmula ou equação, explique seu significado e aplicação. " +
+            "Se for um gráfico ou diagrama, interprete os dados ou conceitos apresentados. " +
+            "Se for um texto manuscrito, transcreva-o e responda à questão, se houver alguma.";
+        }
+        
+        userMessages = [
           {
-            role: "system",
-            content:
-              "Você é um tutor educacional especializado em fornecer explicações detalhadas e didáticas para questões acadêmicas. Sua função é analisar a pergunta do estudante e fornecer uma resposta completa, estruturada e educativa.",
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: `${promptText}\n\nForneça uma resposta estruturada com os seguintes elementos:\n1. Explicação dos conceitos fundamentais envolvidos\n2. Passos para resolver o problema (se aplicável)\n3. Análise da resposta correta\n4. Dicas para questões similares no futuro`,
+              },
+              {
+                type: "image_url",
+                image_url: {
+                  url: args.imageUrl,
+                },
+              },
+            ],
           },
+        ];
+      } else {
+        // Se não tiver imagem, usa o formato de mensagem somente texto
+        userMessages = [
           {
             role: "user",
             content: `Por favor, explique detalhadamente a seguinte questão: ${args.questionText}\n\nForneça uma resposta estruturada com os seguintes elementos:\n1. Explicação dos conceitos fundamentais envolvidos\n2. Passos para resolver o problema (se aplicável)\n3. Análise da resposta correta\n4. Dicas para questões similares no futuro`,
           },
-        ],
+        ];
+      }
+
+      // Monta a mensagem completa
+      const messages = [systemMessage, ...userMessages];
+
+      // Chama a API da OpenAI
+      const response = await openai.chat.completions.create({
+        model: args.model,
+        messages: messages,
       });
 
       return response.choices[0]?.message?.content || "Erro ao gerar resposta.";
@@ -88,11 +136,69 @@ export const generateStudyPlan = action({
           {
             role: "system",
             content:
-              "Você é um especialista em educação e planejamento de estudos. Sua função é criar planos de estudo personalizados e eficazes com base nas necessidades específicas dos estudantes.",
+              "Você é um especialista em pedagogia, metodologias de aprendizado e planejamento de estudos acadêmicos, com profundo conhecimento em técnicas avançadas de metacognição, metodologias ativas e aprendizado baseado em evidências. Sua especialidade é criar planos de estudo altamente personalizados e tecnicamente rigorosos para estudantes em diferentes níveis e áreas do conhecimento."
           },
           {
             role: "user",
-            content: `Crie um plano de estudos detalhado para: ${args.prompt}\n\nO plano deve incluir:\n1. Organização semanal (4 semanas)\n2. Divisão diária de tópicos\n3. Técnicas de estudo recomendadas\n4. Estratégias de revisão\n5. Dicas para maximizar a retenção de conhecimento`,
+            content: `Elabore um plano de estudos detalhado e técnico para: ${args.prompt}
+
+Siga estas diretrizes:
+
+1. ANÁLISE INICIAL (2 parágrafos)
+   - Identifique os conceitos-chave e habilidades específicas que precisam ser desenvolvidas na área de estudo solicitada
+   - Analise possíveis lacunas de conhecimento e pré-requisitos necessários
+   - Determine marcos de progresso claros e mensuráveis
+
+2. ESTRUTURA DO PLANO (cronograma de 4 semanas)
+   - Divida o período em quatro semanas progressivas e bem definidas
+   - Para cada semana, crie um cronograma diário específico (segunda a domingo)
+   - Cada dia deve ter entre 3-5 blocos de estudo com duração, tópicos específicos e objetivos de aprendizagem claros
+   - Alterne entre conteúdos complexos/técnicos e tópicos mais acessíveis
+
+3. ESTRATÉGIAS ESPECÍFICAS DE APRENDIZADO (1-2 parágrafos por técnica)
+   - Inclua no mínimo 5 técnicas de estudo específicas para a área solicitada, como:
+     • Métodos de recuperação ativa (flashcards específicos, testes práticos)
+     • Técnicas de elaboração (mapas mentais, resumos estruturados)
+     • Estratégias de prática deliberada (exercícios de dificuldade progressiva)
+     • Abordagens de aprendizado por projetos
+     • Metodologias de revisão espaçada com calendário específico
+
+4. RECURSOS TÉCNICOS (liste pelo menos 10)
+   - Recomende recursos específicos e atuais para cada tópico
+   - Inclua uma combinação de:
+     • Livros avançados (com capítulos específicos e sequência de leitura)
+     • Artigos acadêmicos recentes
+     • Cursos online e MOOCs (mencionando módulos específicos)
+     • Vídeo-aulas técnicas 
+     • Ferramentas de software/aplicativos especializados para a área
+     • Comunidades online para discussão e resolução de dúvidas
+
+5. SISTEMA DE AVALIAÇÃO DE PROGRESSO (detalhado e específico)
+   - Crie marcos de verificação de progresso semanais
+   - Desenvolva métodos de autoavaliação específicos para a área
+   - Inclua critérios claros para medir o domínio dos tópicos
+
+6. ADAPTAÇÕES PARA DIFERENTES ESTILOS DE APRENDIZAGEM
+   - Ofereça variações das técnicas principais para acomodar preferências de aprendizado visual, auditivo e cinestésico
+   - Sugira ajustes para diferentes níveis de experiência prévia
+
+7. PLANO DE CONTINGÊNCIA E FLEXIBILIDADE
+   - Ofereça estratégias para lidar com tópicos desafiadores
+   - Inclua um "plano B" para semanas com menos tempo disponível
+   
+8. CONSIDERAÇÕES FINAIS
+   - Ofereça recomendações para a continuidade do estudo após as 4 semanas
+   - Sugira formas de aplicação prática dos conhecimentos adquiridos
+
+Importante:
+- Use linguagem técnica apropriada para a área de estudo
+- Seja extremamente específico nos tópicos, evitando generalidades
+- Inclua detalhes técnicos relevantes que demonstrem conhecimento especializado
+- Faça referências a conceitos, teorias e metodologias específicas da área
+- Personalize completamente o plano com base no objetivo, nível e contexto descrito
+- O plano deve ser desafiador, porém realista e aplicável
+
+Apresente o plano em formato estruturado, com títulos e subtítulos claros, utilizando uma formatação que facilite a compreensão e implementação.`,
           },
         ],
       });

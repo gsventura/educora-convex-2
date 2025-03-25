@@ -13,7 +13,7 @@ function LoadingSpinner() {
     <div className="min-h-screen flex items-center justify-center">
       <div className="flex flex-col items-center space-y-4">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-        <p className="text-gray-600">Loading...</p>
+        <p className="text-gray-600">Carregando...</p>
       </div>
     </div>
   );
@@ -61,7 +61,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   // Step 6: Check subscription status
   if (!subscriptionStatus?.hasActiveSubscription) {
-    return <Navigate to="/not-subscribed" replace />;
+    return <Navigate to="/nao-assinante" replace />;
   }
 
   // All checks passed, render protected content

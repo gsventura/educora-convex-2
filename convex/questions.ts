@@ -1,6 +1,8 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
+import { api } from "./_generated/api";
+import { PlanTier } from "../src/types/permissions";
 
 // Generate questions based on subject, difficulty, and prompt
 export const generateQuestions = mutation({
@@ -9,6 +11,9 @@ export const generateQuestions = mutation({
     difficulty: v.string(),
     prompt: v.string(),
     numQuestions: v.number(),
+    aiResponse: v.optional(v.string()),
+    subjectId: v.optional(v.id("subjects")),
+    model: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -25,44 +30,75 @@ export const generateQuestions = mutation({
       throw new Error("User not found");
     }
 
-    // Check if user has credits (for free tier)
-    const subscription = await ctx.db
-      .query("subscriptions")
+    // Get user permissions based on subscription tier
+    const userPermissions = await ctx.db.query("subscriptions")
       .withIndex("userId", (q) => q.eq("userId", identity.subject))
-      .first();
+      .first()
+      .then(subscription => {
+        const hasActiveSubscription = subscription?.status === "active";
+        const userCredits = user.credits || 0;
+        
+        if (!hasActiveSubscription) {
+          return { 
+            tier: "free" as PlanTier, 
+            hasUnlimitedCredits: false,
+            remainingCredits: userCredits,
+            accessToAIModel: "basic"
+          };
+        }
+        
+        // Determine tier from planType
+        let tier = "basic" as PlanTier; // Default é basic para assinaturas ativas
+        
+        // Use planType if available (first priority)
+        if (subscription.planType) {
+          tier = subscription.planType as PlanTier;
+        }
+        // Fallback para determinar pelo valor
+        else if (subscription.amount && subscription.amount >= 1999) {
+          tier = "pro" as PlanTier;
+        }
+                   
+        // Determine AI model based on tier
+        const accessToAIModel = tier === "pro" ? "advanced" : "basic";
+                   
+        return { 
+          tier,
+          hasUnlimitedCredits: true,
+          remainingCredits: userCredits,
+          accessToAIModel
+        };
+      });
 
-    const hasActiveSubscription = subscription?.status === "active";
-    const userCredits = user.credits || 0;
-
-    if (!hasActiveSubscription && userCredits <= 0) {
-      throw new Error("No credits remaining. Please upgrade your plan.");
+    // Verifica se o usuário tem créditos (para o plano gratuito)
+    if (!userPermissions.hasUnlimitedCredits && userPermissions.remainingCredits <= 0) {
+      throw new Error("Sem créditos restantes. Por favor, faça upgrade do seu plano.");
     }
 
-    // In a real implementation, this would call an AI service
-    // For now, we'll generate mock questions
-    const mockQuestions = [
-      `What are the key differences between ${args.subject} in the context of ${args.prompt}?`,
-      `Explain how ${args.prompt} relates to the fundamental principles of ${args.subject}.`,
-      `Compare and contrast the various approaches to solving problems in ${args.subject} when dealing with ${args.prompt}.`,
-      `What are the historical developments that led to our current understanding of ${args.prompt} in ${args.subject}?`,
-      `Describe a real-world application of ${args.subject} concepts in the context of ${args.prompt}.`,
-    ].slice(0, args.numQuestions);
+    // Verifica se temos uma resposta da IA
+    if (!args.aiResponse) {
+      throw new Error("Nenhuma resposta da IA fornecida.");
+    }
 
-    // Deduct a credit if user is on free tier
-    if (!hasActiveSubscription) {
-      await ctx.db.patch(user._id, { credits: userCredits - 1 });
+    // Extrai as perguntas da resposta da IA, por enquanto vamos usar o aiResponse completo
+    const questions = [args.aiResponse];
+
+    // Deduz um crédito se o usuário estiver no plano gratuito
+    if (!userPermissions.hasUnlimitedCredits) {
+      await ctx.db.patch(user._id, { credits: userPermissions.remainingCredits - 1 });
     }
 
     // Store the generated questions
     const generatedQuestionId = await ctx.db.insert("generatedQuestions", {
       userId: user._id,
+      subjectId: args.subjectId,
       subject: args.subject,
       difficulty: args.difficulty,
       prompt: args.prompt,
-      model: "gpt-4", // Model name
+      model: userPermissions.accessToAIModel === "advanced" ? (args.model || "gpt-4o") : "gpt-3.5-turbo",
       status: "completed",
-      questions: mockQuestions,
-      aiResponse: JSON.stringify(mockQuestions),
+      questions: [args.aiResponse], // Usa a resposta completa da IA como única questão
+      aiResponse: args.aiResponse,
       createdAt: new Date().toISOString(),
       savedStatus: false,
       savedTags: [args.subject, args.difficulty],
@@ -70,8 +106,8 @@ export const generateQuestions = mutation({
 
     return {
       id: generatedQuestionId,
-      questions: mockQuestions,
-      remainingCredits: hasActiveSubscription ? "unlimited" : userCredits - 1,
+      questions: [args.aiResponse],
+      remainingCredits: userPermissions.hasUnlimitedCredits ? "unlimited" : userPermissions.remainingCredits - 1,
     };
   },
 });

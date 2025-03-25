@@ -11,6 +11,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, X } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -31,7 +33,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 export function QuestionGenerator() {
   const [subject, setSubject] = useState("");
@@ -40,8 +42,13 @@ export function QuestionGenerator() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState<string>("");
   const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [showNewQuestionDialog, setShowNewQuestionDialog] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [customTag, setCustomTag] = useState("");
+  const [aiModel, setAiModel] = useState<string>("gpt-4o");
+  const [modelError, setModelError] = useState<React.ReactNode | null>(null);
+  const [showForm, setShowForm] = useState(true);
+  const { toast } = useToast();
 
   // Connect to Convex actions and mutations
   const generateQuestionAction = useAction(api.openai.generateQuestion);
@@ -63,6 +70,65 @@ export function QuestionGenerator() {
 
   // Get user's credit information
   const userCreditInfo = useQuery(api.users.getUserCreditInfo);
+  const getUserDashboardUrl = useAction(api.subscriptions.getUserDashboardUrl);
+  const subscription = useQuery(api.subscriptions.getUserSubscription);
+
+  // Verificar se o usuário pode usar o modelo selecionado com base no plano
+  useEffect(() => {
+    // Verificamos apenas na inicialização do componente
+    if (aiModel === "o3-mini" && userCreditInfo?.tier !== "pro") {
+      setAiModel("gpt-4o");
+    }
+  }, [userCreditInfo?.tier]);
+
+  // Função para lidar com a mudança do modelo de IA
+  const handleModelChange = (model: string) => {
+    // Primeiro definimos o modelo solicitado para permitir a verificação no useEffect
+    setAiModel(model);
+    
+    // Se o usuário não for Pro e tentar selecionar o modelo avançado,
+    // vamos definir explicitamente a mensagem de erro aqui também
+    if (model === "o3-mini" && userCreditInfo?.tier !== "pro") {
+      if (userCreditInfo?.tier === "free" || !userCreditInfo?.tier) {
+        setModelError(
+          <div>
+            O modelo IA Avançada está disponível apenas para assinantes do plano Pro. <a href="/nao-assinante" className="font-bold text-primary underline">Assine agora</a> e comece a usar a IA Avançada.
+          </div>
+        );
+      } else if (userCreditInfo?.tier === "basic") {
+        setModelError(
+          <div>
+            O modelo IA Avançada está disponível apenas para assinantes do plano Pro. <a 
+              href="#" 
+              onClick={async (e) => {
+                e.preventDefault();
+                try {
+                  const result = await getUserDashboardUrl({
+                    customerId: subscription?.customerId || ""
+                  });
+                  if (result?.url) {
+                    window.location.href = result.url;
+                  }
+                } catch (error) {
+                  console.error("Error getting dashboard URL:", error);
+                }
+              }}
+              className="font-bold text-primary underline"
+            >
+              Atualize seu plano
+            </a> para continuar.
+          </div>
+        );
+      }
+      
+      // Após exibir o erro, voltamos ao modelo básico
+      setTimeout(() => {
+        setAiModel("gpt-4o");
+      }, 0);
+    } else {
+      setModelError(null);
+    }
+  };
 
   const handleGenerate = async () => {
     if (!subject || !prompt) return;
@@ -72,12 +138,20 @@ export function QuestionGenerator() {
       !userCreditInfo?.hasActiveSubscription &&
       (userCreditInfo?.credits || 0) <= 0
     ) {
-      alert(
-        "You have no credits remaining. Please upgrade your plan to continue.",
-      );
+      toast({
+        variant: "destructive",
+        title: "Sem créditos disponíveis",
+        description: (
+          <div>
+            Você não tem créditos restantes. <a href="/nao-assinante" className="font-bold text-white underline">Atualize seu plano agora</a> para continuar.
+          </div>
+        ),
+      });
       return;
     }
 
+    // Esconde o formulário imediatamente após clicar
+    setShowForm(false);
     setIsGenerating(true);
     setGeneratedContent("");
 
@@ -87,11 +161,15 @@ export function QuestionGenerator() {
         subject,
         difficulty,
         prompt,
-        model: "gpt-4", // Using GPT-4 for better quality questions
+        model: aiModel, // Usando o modelo selecionado
       });
 
       // Set the generated content
       setGeneratedContent(result);
+
+      // Find the subject ID based on the selected subject name
+      const selectedSubject = subjects?.find(subj => subj.name === subject);
+      const subjectId = selectedSubject?._id;
 
       // Also save to the database automatically
       const response = await generateQuestionsMutation({
@@ -99,6 +177,9 @@ export function QuestionGenerator() {
         difficulty,
         prompt,
         numQuestions: 1,
+        aiResponse: result,
+        subjectId, // Passando o ID do subject selecionado
+        model: aiModel, // Passando o modelo selecionado pelo usuário
       });
 
       // Show remaining credits if user is on free plan
@@ -107,7 +188,13 @@ export function QuestionGenerator() {
       }
     } catch (error) {
       console.error("Error generating questions:", error);
-      alert("Failed to generate questions. Please try again.");
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Falha ao gerar questões. Por favor, tente novamente.",
+      });
+      // Em caso de erro, mostra o formulário novamente
+      setShowForm(true);
     } finally {
       setIsGenerating(false);
     }
@@ -116,8 +203,8 @@ export function QuestionGenerator() {
   const handleSaveQuestion = async () => {
     if (!generatedContent) return;
     setShowSaveDialog(true);
-    // Initialize tags with subject and difficulty
-    setSelectedTags([subject, difficulty]);
+    // Initialize tags with subject only (removed difficulty)
+    setSelectedTags([subject]);
   };
 
   const handleConfirmSave = async () => {
@@ -131,10 +218,36 @@ export function QuestionGenerator() {
 
       // Close dialog without showing alert
       setShowSaveDialog(false);
+      
+      // Show success toast
+      toast({
+        title: "Questão salva",
+        description: "Sua questão foi salva com sucesso.",
+      });
     } catch (error) {
       console.error("Error saving question:", error);
-      alert("Failed to save question. Please try again.");
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Falha ao salvar questão. Por favor, tente novamente.",
+      });
     }
+  };
+
+  const handleNewQuestion = () => {
+    if (generatedContent) {
+      setShowNewQuestionDialog(true);
+    } else {
+      resetForm();
+    }
+  };
+
+  const resetForm = () => {
+    setSubject("");
+    setDifficulty("medium");
+    setPrompt("");
+    setGeneratedContent("");
+    setShowForm(true);
   };
 
   const addCustomTag = () => {
@@ -150,68 +263,98 @@ export function QuestionGenerator() {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Question Generator</CardTitle>
-          <CardDescription>
-            Create custom exam questions by specifying subject, difficulty
-            level, and prompt.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="subject">Subject</Label>
-              <Select value={subject} onValueChange={setSubject}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a subject" />
-                </SelectTrigger>
-                <SelectContent>
-                  {subjects?.map((subject) => (
-                    <SelectItem key={subject._id} value={subject.name}>
-                      {subject.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+      {showForm && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Gerar Questões</CardTitle>
+            <CardDescription>
+              Crie questões personalizadas para os seus estudos, provas, simulados e mais.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="subject">Disciplina</Label>
+                <Select value={subject} onValueChange={setSubject}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a disciplina" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {subjects?.map((subject) => (
+                      <SelectItem key={subject._id} value={subject.name}>
+                        {subject.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="difficulty">Nível de Dificuldade</Label>
+                <Select value={difficulty} onValueChange={setDifficulty}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o nível de dificuldade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="easy">Fácil</SelectItem>
+                    <SelectItem value="medium">Médio</SelectItem>
+                    <SelectItem value="hard">Difícil</SelectItem>
+                    <SelectItem value="expert">Expert</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="difficulty">Difficulty Level</Label>
-              <Select value={difficulty} onValueChange={setDifficulty}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select difficulty" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="easy">Easy</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="hard">Hard</SelectItem>
-                  <SelectItem value="expert">Expert</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="prompt">Prompt or Topic</Label>
-            <Textarea
-              id="prompt"
-              placeholder="Describe the specific topic or concepts you want questions about"
-              rows={4}
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-            />
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Button
-            onClick={handleGenerate}
-            disabled={!subject || !prompt || isGenerating}
-            className="w-full"
-          >
-            {isGenerating ? "Generating..." : "Generate Question"}
-          </Button>
-        </CardFooter>
-      </Card>
+            <div className="space-y-2">
+              <Label htmlFor="aiModel">Modelo de IA</Label>
+              <Select value={aiModel} onValueChange={handleModelChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o modelo de IA" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="gpt-4o">IA Básica</SelectItem>
+                  <SelectItem value="o3-mini">IA Avançada {userCreditInfo?.tier !== "pro" && "(Pro)"}</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {modelError && (
+                <Alert variant="destructive" className="mt-2">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{modelError}</AlertDescription>
+                </Alert>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="prompt">Descreva a questão</Label>
+              <Textarea
+                id="prompt"
+                placeholder="Descreva o assunto ou conceitos que você quer questões sobre"
+                rows={4}
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+              />
+            </div>
+          </CardContent>
+          <CardFooter className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <Button
+              onClick={handleGenerate}
+              disabled={!subject || !prompt || isGenerating}
+              className="w-full sm:w-auto"
+            >
+              {isGenerating ? "Gerando..." : "Gerar Questão"}
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              IAs podem cometer erros. Sempre confirme o que a Educora gera. Em caso de problemas com erros, entre em contato conosco pelo{" "}
+              <a 
+                href="mailto:ola@educora.com.br" 
+                className="text-primary hover:underline"
+              >
+                ola@educora.com.br
+              </a>
+            </p>
+          </CardFooter>
+        </Card>
+      )}
 
       {isGenerating && (
         <div className="flex justify-center py-8">
@@ -222,8 +365,8 @@ export function QuestionGenerator() {
       {generatedContent && (
         <Card>
           <CardHeader>
-            <CardTitle>Generated Question</CardTitle>
-            <CardDescription>ENEM-style question for {subject}</CardDescription>
+            <CardTitle>Questão Gerada</CardTitle>
+            <CardDescription>Disciplina: {subject}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="p-4 border rounded-lg bg-white">
@@ -231,10 +374,10 @@ export function QuestionGenerator() {
             </div>
           </CardContent>
           <CardFooter className="flex justify-between">
-            <Button variant="outline" onClick={() => setGeneratedContent("")}>
-              Clear
+            <Button variant="outline" onClick={handleNewQuestion}>
+              Gerar Nova Questão
             </Button>
-            <Button onClick={handleSaveQuestion}>Save Question</Button>
+            <Button onClick={handleSaveQuestion}>Salvar Questão</Button>
           </CardFooter>
         </Card>
       )}
@@ -243,9 +386,9 @@ export function QuestionGenerator() {
       <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Save Question</DialogTitle>
+            <DialogTitle>Salvar Questão</DialogTitle>
             <DialogDescription>
-              Add tags to help organize and find this question later.
+              Adicione tags para organizar e encontrar esta questão mais tarde.
             </DialogDescription>
           </DialogHeader>
 
@@ -263,7 +406,7 @@ export function QuestionGenerator() {
 
             <div className="flex gap-2">
               <Input
-                placeholder="Add a custom tag"
+                placeholder="Adicione uma tag personalizada"
                 value={customTag}
                 onChange={(e) => setCustomTag(e.target.value)}
                 onKeyDown={(e) => {
@@ -274,16 +417,39 @@ export function QuestionGenerator() {
                 }}
               />
               <Button onClick={addCustomTag} type="button" variant="outline">
-                Add
+                Adicionar
               </Button>
             </div>
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowSaveDialog(false)}>
-              Cancel
+              Cancelar
             </Button>
-            <Button onClick={handleConfirmSave}>Save Question</Button>
+            <Button onClick={handleConfirmSave}>Salvar Questão</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* New Question Confirmation Dialog */}
+      <Dialog open={showNewQuestionDialog} onOpenChange={setShowNewQuestionDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Gerar Nova Questão</DialogTitle>
+            <DialogDescription>
+              Deseja gerar outra questão? A questão atual será perdida.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNewQuestionDialog(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={() => {
+              setShowNewQuestionDialog(false);
+              resetForm();
+            }}>
+              Confirmar
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

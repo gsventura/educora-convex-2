@@ -51,6 +51,18 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        tertiary: {
+          DEFAULT: "hsl(var(--tertiary))",
+          foreground: "hsl(var(--foreground))",
+        },
+        quaternary: {
+          DEFAULT: "hsl(var(--quaternary))",
+          foreground: "hsl(var(--foreground))",
+        },
+        quinary: {
+          DEFAULT: "hsl(var(--quinary))",
+          foreground: "hsl(var(--foreground))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -73,5 +85,5 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
 }

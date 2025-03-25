@@ -203,3 +203,80 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - [Convex](https://convex.dev) for backend services
 - [Polar.sh](https://polar.sh) for payment processing
 - [Radix UI](https://www.radix-ui.com) for UI components
+
+# Educora Convex
+
+Plataforma de estudo usando IA.
+
+## Sistema de Planos e Assinaturas
+
+O sistema possui três tipos de planos:
+
+1. **Free** - Plano gratuito padrão para novos usuários
+   - Acesso limitado a recursos básicos
+   - Número limitado de créditos para uso
+   - Limite de 1 plano de estudo
+
+2. **Basic** - Plano pago com recursos intermediários
+   - Acesso ilimitado a recursos básicos
+   - Acesso à IA básica
+   - Limite de 3 planos de estudo
+
+3. **Pro** - Plano premium com todos os recursos
+   - Acesso ilimitado a todos os recursos
+   - Acesso à IA avançada
+   - Planos de estudo ilimitados
+
+### Configuração dos Planos
+
+Os planos são identificados por seus price IDs no Stripe. O mapeamento entre price IDs e tipos de plano está definido na constante `PRICE_ID_TO_PLAN_TYPE` no arquivo `convex/subscriptions.ts`.
+
+Para adicionar ou modificar planos:
+
+1. Crie os planos no painel do Stripe
+2. Anote os price IDs gerados 
+3. Atualize a constante `PRICE_ID_TO_PLAN_TYPE` com os novos IDs
+4. Exemplo:
+   ```javascript
+   const PRICE_ID_TO_PLAN_TYPE = {
+     "price_1OLxNxHj62qIVbCe2oLMJ2t5": "basic", // Basic Mensal
+     "price_1OLxQ7Hj62qIVbCeKWgW5Vwp": "pro",   // Pro Mensal
+   };
+   ```
+
+### Verificando Assinaturas de Usuários
+
+Para verificar as permissões de um usuário baseado em seu plano, use a função `getUserPermissions`:
+
+```javascript
+const userPermissions = await ctx.runQuery(api.subscriptions.getUserPermissions);
+if (userPermissions.tier === "pro") {
+  // Permitir recursos premium
+}
+```
+
+### Solução de Problemas
+
+Se você encontrar problemas com a identificação do tipo de plano:
+
+1. Verifique os logs para ver qual price ID está sendo usado
+2. Confirme que o price ID está corretamente mapeado na constante `PRICE_ID_TO_PLAN_TYPE`
+3. Se o price ID não for reconhecido, o sistema recorrerá ao valor da assinatura:
+   - planos com valor ≥ R$ 19,99 são identificados como "pro"
+   - planos com valor < R$ 19,99 são identificados como "basic"
+
+#### Corrigindo assinaturas com planType incorreto
+
+Se assinaturas estiverem sendo criadas com o tipo de plano incorreto:
+
+1. Verifique a função `determinePlanType` em `convex/subscriptions.ts` para garantir que o mapeamento de preços esteja correto
+2. Execute a função de manutenção para corrigir assinaturas existentes:
+   ```bash
+   npx convex run subscriptions:fixSubscriptionPlanTypes
+   ```
+3. Verifique os logs do Convex para depurar o processo de determinação do tipo de plano
+
+Para facilitar a depuração, o sistema agora registra informações detalhadas nos logs sobre como o tipo de plano é determinado:
+- Primeiro tenta usar o mapeamento direto do ID do preço (PRICE_ID_TO_PLAN_TYPE)
+- Depois verifica se o nome do ID do preço contém "basic" ou "pro"
+- Como último recurso, usa o valor da assinatura (≥ R$ 19,99 = "pro", caso contrário "basic")

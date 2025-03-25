@@ -73,10 +73,18 @@ export const getUserCreditInfo = query({
     const hasActiveSubscription = subscription?.status === "active";
     const credits = user.credits || 0;
 
-    // Determine tier based on subscription amount
+    // Determine tier based on subscription planType
     let tier = "free";
     if (hasActiveSubscription) {
-      tier = subscription.amount >= 1999 ? "pro" : "basic";
+      // Use planType if available, otherwise fall back to the old amount-based determination
+      if (subscription.planType) {
+        tier = subscription.planType;
+      } else if (subscription.amount) {
+        tier = subscription.amount >= 1999 ? "pro" : "basic";
+      } else {
+        // Se tiver assinatura ativa mas sem planType nem amount, considerar basic
+        tier = "basic";
+      }
     }
 
     return { credits, hasActiveSubscription, tier };
