@@ -15,6 +15,8 @@ import { useStoreUserEffect } from "./utils/useStoreUserEffect";
 import { Toaster } from "@/components/ui/toaster";
 import SignInSSOCallback from "./pages/sign-in/sso-callback";
 import SignUpSSOCallback from "./pages/sign-up/sso-callback";
+import FactorOnePage from "./pages/sign-in/factor-one";
+import FactorTwoPage from "./pages/sign-in/factor-two";
 
 // Importando as páginas de recursos
 import RecursosHub from "./pages/recursos";
@@ -58,6 +60,8 @@ function App() {
           <Route path="/sign-up" element={<SignUp />} />
           <Route path="/sign-in/sso-callback" element={<SignInSSOCallback />} />
           <Route path="/sign-up/sso-callback" element={<SignUpSSOCallback />} />
+          <Route path="/sign-in/factor-one" element={<FactorOnePage />} />
+          <Route path="/sign-in/factor-two" element={<FactorTwoPage />} />
           <Route path="/color-demo" element={<ColorDemoPage />} />
           
           {/* Rotas para a Central de Recursos */}
