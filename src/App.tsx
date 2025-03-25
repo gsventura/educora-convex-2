@@ -54,6 +54,7 @@ function App() {
           <Route path="/nao-assinante" element={<NaoAssinante />} />
           <Route path="/sign-in" element={<SignIn />} />
           <Route path="/sign-up" element={<SignUp />} />
+          <Route path="/sign-in/sso-callback" element={<Navigate to="/dashboard" replace />} />
           <Route path="/color-demo" element={<ColorDemoPage />} />
           
           {/* Rotas para a Central de Recursos */}
