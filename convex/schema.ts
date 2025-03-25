@@ -1,3 +1,4 @@
+// Schema atualizado em 25/03 para corrigir validação
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
