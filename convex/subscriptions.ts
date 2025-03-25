@@ -10,12 +10,12 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 // Substitua estes valores pelos IDs reais dos seus preços no Stripe
 const PRICE_ID_TO_PLAN_TYPE = {
   // Planos mensais
-  "price_1Q0UtHCiAbwUv4bIXhchhGv2": "basic", // Basic Mensal
-  "price_1PzRV4CiAbwUv4bIDcFp0KUv": "pro",   // Pro Mensal
+  "price_1Q0UsJCiAbwUv4bIROSHF4mt": "basic", // Basic Mensal
+  "price_1PzRazCiAbwUv4bIMuJJp1jr": "pro",   // Pro Mensal
   
   // Planos anuais
-  "price_1Q0UtHCiAbwUv4bI19agfivT": "basic", // Basic Anual
-  "price_1PzRV4CiAbwUv4bIggZCMI8a": "pro",   // Pro Anual
+  "price_1Q0UsJCiAbwUv4bInZmLWMI9": "basic", // Basic Anual
+  "price_1PzRazCiAbwUv4bIc2fASDcY": "pro",   // Pro Anual
 };
 
 // Função utilitária para determinar o tipo de plano com base no price ID ou valor
