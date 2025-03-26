@@ -9,7 +9,7 @@ export default function FactorOnePage() {
       <div className="container mx-auto py-16 px-4 flex flex-col items-center justify-center">
         <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 w-full max-w-md">
           <h1 className="text-2xl font-bold text-center mb-6 text-gray-900">
-            Verificação adicional
+            Digite sua Senha
           </h1>
           <p className="text-gray-600 text-center mb-8">
             Complete a verificação para continuar

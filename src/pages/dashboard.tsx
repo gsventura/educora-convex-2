@@ -1,5 +1,5 @@
 import { useUser } from "@clerk/clerk-react";
-import { useQuery } from "convex/react";
+import { useQuery, useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Navbar } from "../components/navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -27,6 +27,24 @@ export default function Dashboard() {
   const subscription = useQuery(api.subscriptions.getUserSubscription);
   const userCreditInfo = useQuery(api.users.getUserCreditInfo);
   const navigate = useNavigate();
+  const getDashboardUrl = useAction(api.subscriptions.getUserDashboardUrl);
+
+  const handleManageSubscription = async () => {
+    if (subscription?.status === "active") {
+      try {
+        const result = await getDashboardUrl({
+          customerId: subscription?.customerId
+        });
+        if (result?.url) {
+          window.location.href = result.url;
+        }
+      } catch (error) {
+        console.error("Error getting dashboard URL:", error);
+      }
+    } else {
+      navigate("/nao-assinante");
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -60,11 +78,7 @@ export default function Dashboard() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => 
-                    subscription?.status === "active" 
-                      ? navigate("/dashboard-paid") 
-                      : navigate("/nao-assinante")
-                  }
+                  onClick={handleManageSubscription}
                 >
                   {subscription?.status === "active" ? "Gerenciar" : "Atualizar"}
                 </Button>

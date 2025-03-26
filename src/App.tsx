@@ -2,7 +2,6 @@ import { Suspense } from "react";
 import { Route, Routes, useRoutes, Navigate } from "react-router-dom";
 import routes from "tempo-routes";
 import Dashboard from "./pages/dashboard";
-import DashboardPaid from "./pages/dashboard-paid";
 import Form from "./pages/form";
 import NaoAssinante from "./pages/nao-assinante";
 import Success from "./pages/success";
@@ -50,14 +49,6 @@ function App() {
                 <Dashboard />
               </AuthRoute>
             } 
-          />
-          <Route
-            path="/dashboard-paid"
-            element={
-              <ProtectedRoute>
-                <DashboardPaid />
-              </ProtectedRoute>
-            }
           />
           <Route path="/form" element={<Form />} />
           <Route path="/success" element={<Success />} />
