@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import { useGTM } from "@/context/GTMContext";
 
 interface FormData {
   name: string;
@@ -19,11 +20,20 @@ export function ContactForm() {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   
   const submitForm = useMutation(api.forms.submitForm);
+  const { trackEvent } = useGTM();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus('idle');
+
+    // Rastrear início do envio do formulário
+    trackEvent(
+      'form_submission_attempt',
+      'Formulário',
+      'Tentativa',
+      'Formulário de Contato'
+    );
 
     try {
       await submitForm({
@@ -32,10 +42,27 @@ export function ContactForm() {
         message: formData.message,
       });
 
+      // Rastrear envio do formulário com sucesso
+      trackEvent(
+        'form_submission_success',
+        'Formulário',
+        'Sucesso',
+        'Formulário de Contato'
+      );
+
       setSubmitStatus('success');
       setFormData({ name: '', email: '', message: '' }); // Reset form
     } catch (error) {
       console.error('Form submission error:', error);
+      
+      // Rastrear erro de envio do formulário
+      trackEvent(
+        'form_submission_error',
+        'Formulário',
+        'Erro',
+        'Formulário de Contato'
+      );
+      
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);
@@ -48,6 +75,16 @@ export function ContactForm() {
       ...prev,
       [name]: value
     }));
+  };
+
+  // Rastrear quando o formulário é focado para análise de engajamento
+  const handleFieldFocus = (fieldName: string) => {
+    trackEvent(
+      'form_field_focus',
+      'Formulário',
+      'Foco',
+      `Campo ${fieldName}`
+    );
   };
 
   return (
@@ -63,6 +100,7 @@ export function ContactForm() {
             id="name"
             value={formData.name}
             onChange={handleChange}
+            onFocus={() => handleFieldFocus('nome')}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             required
             disabled={isSubmitting}
@@ -79,6 +117,7 @@ export function ContactForm() {
             id="email"
             value={formData.email}
             onChange={handleChange}
+            onFocus={() => handleFieldFocus('email')}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             required
             disabled={isSubmitting}
@@ -95,6 +134,7 @@ export function ContactForm() {
             rows={4}
             value={formData.message}
             onChange={handleChange}
+            onFocus={() => handleFieldFocus('mensagem')}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             required
             disabled={isSubmitting}
@@ -105,6 +145,16 @@ export function ContactForm() {
           type="submit"
           className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
           disabled={isSubmitting}
+          onClick={() => {
+            if (!isSubmitting) {
+              trackEvent(
+                'form_button_click',
+                'Formulário',
+                'Clique',
+                'Botão de Envio'
+              );
+            }
+          }}
         >
           {isSubmitting ? 'Submitting...' : 'Submit'}
         </Button>

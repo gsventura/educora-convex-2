@@ -272,11 +272,22 @@ export function StudyPlans() {
 
   const handleManageSubscription = async () => {
     try {
-      const result = await getDashboardUrl({
-        customerId: subscription?.customerId
-      });
-      if (result?.url) {
-        window.location.href = result.url;
+      // Redirecionar para página de não assinante se usuário estiver no plano gratuito
+      if (userCreditInfo?.tier === "free") {
+        window.location.href = "/nao-assinante";
+        return;
+      }
+      
+      // Se não for free e tiver customerId, direcionamos para o Stripe
+      if (subscription?.customerId) {
+        const result = await getDashboardUrl({
+          customerId: subscription.customerId
+        });
+        if (result?.url) {
+          window.location.href = result.url;
+        }
+      } else {
+        console.error("Erro: customerId não encontrado para o usuário basic");
       }
     } catch (error) {
       console.error("Erro ao obter URL do dashboard:", error);
@@ -291,9 +302,14 @@ export function StudyPlans() {
       !userCreditInfo?.hasActiveSubscription &&
       (userCreditInfo?.credits || 0) <= 0
     ) {
-      alert(
-        "Você não tem créditos restantes. Por favor, faça upgrade do seu plano para continuar.",
-      );
+      // Diferencia redirecionamento conforme o tier do usuário
+      if (userCreditInfo?.tier === "basic") {
+        // Usuários Basic vão para o Stripe
+        handleManageSubscription();
+      } else {
+        // Usuários Free vão para /nao-assinante
+        window.location.href = "/nao-assinante";
+      }
       return;
     }
 
@@ -399,7 +415,7 @@ export function StudyPlans() {
     }
   };
 
-  // Se o usuário não for Pro, exibe apenas a tela de upgrade
+  // Se o usuário não for Pro, exibe tela específica baseada no tier
   if (!isPro) {
     return (
       <div className="space-y-6">
@@ -419,7 +435,14 @@ export function StudyPlans() {
           <Button
             size="lg"
             className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6"
-            onClick={handleManageSubscription}
+            onClick={() => {
+              // Usuários Basic vão para o Stripe, usuários Free vão para /nao-assinante
+              if (userCreditInfo?.tier === "basic") {
+                handleManageSubscription();
+              } else {
+                window.location.href = "/nao-assinante";
+              }
+            }}
           >
             Faça upgrade para o plano Pro
           </Button>

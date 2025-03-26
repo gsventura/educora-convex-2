@@ -8,6 +8,7 @@ import { BrowserRouter } from "react-router-dom";
 import { TempoDevtools } from "tempo-devtools";
 import App from "./App.tsx";
 import "./index.css";
+import GTMProvider from "./context/GTMContext.tsx";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
@@ -29,9 +30,11 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       localization={ptBR}
     >
     <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-      <BrowserRouter basename={basename}>
-        <App />
-      </BrowserRouter>
+      <GTMProvider>
+        <BrowserRouter basename={basename}>
+          <App />
+        </BrowserRouter>
+      </GTMProvider>
     </ConvexProviderWithClerk>
     </ClerkProvider>
   </React.StrictMode>,

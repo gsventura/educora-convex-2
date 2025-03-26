@@ -17,6 +17,7 @@ import SignInSSOCallback from "./pages/sign-in/sso-callback";
 import SignUpSSOCallback from "./pages/sign-up/sso-callback";
 import FactorOnePage from "./pages/sign-in/factor-one";
 import FactorTwoPage from "./pages/sign-in/factor-two";
+import GTMPageTracking from "./components/wrappers/GTMPageTracking";
 
 // Importando as páginas de recursos
 import RecursosHub from "./pages/recursos";
@@ -36,6 +37,7 @@ function App() {
   return (
     <Suspense fallback={<p>Loading...</p>}>
       <>
+        <GTMPageTracking />
         <Routes>
           <Route 
             path="/" 
