@@ -19,6 +19,7 @@ export default function SignInPage() {
             <ClerkSignIn 
               routing="path"
               path="/sign-in"
+              signUpUrl="/sign-up"
               appearance={{
                 elements: {
                   formButtonPrimary: 

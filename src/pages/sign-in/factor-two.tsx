@@ -19,6 +19,7 @@ export default function FactorTwoPage() {
             <ClerkSignIn 
               routing="path"
               path="/sign-in"
+              signUpUrl="/sign-up"
               appearance={{
                 elements: {
                   formButtonPrimary: 
