@@ -170,7 +170,7 @@ export function AnswerAssistant() {
   const [answer, setAnswer] = useState("");
   const [uploadedImage, setUploadedImage] = useState(null);
   const [inputMethod, setInputMethod] = useState("text");
-  const [aiModel, setAiModel] = useState("gpt-4o");
+  const [aiModel, setAiModel] = useState("gpt-4.1");
   const [modelError, setModelError] = useState(null);
   const [showForm, setShowForm] = useState(true);
   const [showNewAnswerDialog, setShowNewAnswerDialog] = useState(false);
@@ -197,7 +197,7 @@ export function AnswerAssistant() {
       setQuestionText("");
     } else if (inputMethod === "image" && aiModel === "o3-mini") {
       // Reset to default model if in image mode and using advanced model
-      setAiModel("gpt-4o");
+      setAiModel("gpt-4.1");
     }
   }, [inputMethod]);
 
@@ -249,7 +249,7 @@ export function AnswerAssistant() {
       }
       
       setTimeout(() => {
-        setAiModel("gpt-4o");
+        setAiModel("gpt-4.1");
       }, 0);
     } else {
       setModelError(null);
@@ -761,7 +761,7 @@ Leve em consideração este feedback ao formular sua nova resposta. Tente aborda
                   <SelectValue placeholder="Selecione o modelo de IA" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="gpt-4o">IA Básica</SelectItem>
+                  <SelectItem value="gpt-4.1">IA Básica</SelectItem>
                   <SelectItem value="o3-mini" disabled={inputMethod === "image"}>
                     IA Avançada {userCreditInfo?.tier !== "pro" && "(Pro)"}{inputMethod === "image" && " - Indisponível para imagens"}
                   </SelectItem>

@@ -95,7 +95,7 @@ export const generateQuestions = mutation({
       subject: args.subject,
       difficulty: args.difficulty,
       prompt: args.prompt,
-      model: userPermissions.accessToAIModel === "advanced" ? (args.model || "o3-mini") : "gpt-4o",
+      model: userPermissions.accessToAIModel === "advanced" ? (args.model || "o3-mini") : "gpt-4.1",
       status: "completed",
       questions: [args.aiResponse], // Usa a resposta completa da IA como única questão
       aiResponse: args.aiResponse,

@@ -45,7 +45,7 @@ export function QuestionGenerator() {
   const [showNewQuestionDialog, setShowNewQuestionDialog] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [customTag, setCustomTag] = useState("");
-  const [aiModel, setAiModel] = useState<string>("gpt-4o");
+  const [aiModel, setAiModel] = useState<string>("gpt-4.1");
   const [modelError, setModelError] = useState<React.ReactNode | null>(null);
   const [showForm, setShowForm] = useState(true);
   const { toast } = useToast();
@@ -77,7 +77,7 @@ export function QuestionGenerator() {
   useEffect(() => {
     // Verificamos apenas na inicialização do componente
     if (aiModel === "o3-mini" && userCreditInfo?.tier !== "pro") {
-      setAiModel("gpt-4o");
+      setAiModel("gpt-4.1");
     }
   }, [userCreditInfo?.tier]);
 
@@ -123,7 +123,7 @@ export function QuestionGenerator() {
       
       // Após exibir o erro, voltamos ao modelo básico
       setTimeout(() => {
-        setAiModel("gpt-4o");
+        setAiModel("gpt-4.1");
       }, 0);
     } else {
       setModelError(null);
@@ -311,7 +311,7 @@ export function QuestionGenerator() {
                   <SelectValue placeholder="Selecione o modelo de IA" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="gpt-4o">IA Básica</SelectItem>
+                  <SelectItem value="gpt-4.1">IA Básica</SelectItem>
                   <SelectItem value="o3-mini">IA Avançada {userCreditInfo?.tier !== "pro" && "(Pro)"}</SelectItem>
                 </SelectContent>
               </Select>

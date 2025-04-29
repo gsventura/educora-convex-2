@@ -52,7 +52,7 @@ export const generateAnswer = mutation({
       userId: user._id,
       questionText: args.questionText,
       imageUrl: args.imageUrl,
-      model: args.model || "gpt-4o",
+      model: args.model || "gpt-4.1",
       status: "completed",
       aiResponse: args.aiResponse,
       createdAt: new Date().toISOString(),

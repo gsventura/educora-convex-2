@@ -137,7 +137,7 @@ export const saveStudyPlan = mutation({
       title: args.title,
       content: args.content,
       prompt: args.prompt,
-      model: args.model || "gpt-4o",
+      model: args.model || "gpt-4.1",
       createdAt: new Date().toISOString(),
     });
 
