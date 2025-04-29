@@ -202,7 +202,7 @@ export function AnswerAssistant() {
   const handleModelChange = (model) => {
     setAiModel(model);
     
-    if (model === "o3" && userCreditInfo?.tier !== "pro" && userCreditInfo?.tier !== "basic") {
+    if (model === "o3-2025-04-16" && userCreditInfo?.tier !== "pro" && userCreditInfo?.tier !== "basic") {
       if (userCreditInfo?.tier === "free" || !userCreditInfo?.tier) {
         setModelError(
           <div>
@@ -724,7 +724,7 @@ Leve em consideração este feedback ao formular sua nova resposta. Tente aborda
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="gpt-4.1">IA Básica</SelectItem>
-                  <SelectItem value="o3">
+                  <SelectItem value="o3-2025-04-16">
                     IA Avançada {userCreditInfo?.tier !== "pro" && userCreditInfo?.tier !== "basic" && "(Pro/Basic)"}
                   </SelectItem>
                 </SelectContent>
