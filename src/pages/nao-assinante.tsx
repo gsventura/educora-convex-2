@@ -39,6 +39,22 @@ export default function NaoAssinante() {
     // Log dos produtos filtrados para debug
     console.log("Produtos filtrados:", JSON.stringify(products, null, 2));
 
+    // Organiza os planos para que o Pro apareça primeiro
+    const sortedProducts = [...products].sort((a, b) => {
+        const aName = typeof a.product === 'string' ? '' : a.product.name || '';
+        const bName = typeof b.product === 'string' ? '' : b.product.name || '';
+        
+        const aIsPro = aName.toLowerCase().includes('pro');
+        const bIsPro = bName.toLowerCase().includes('pro');
+        
+        // Se A é Pro e B não é, A vem primeiro (-1)
+        if (aIsPro && !bIsPro) return -1;
+        // Se B é Pro e A não é, B vem primeiro (1)
+        if (!aIsPro && bIsPro) return 1;
+        // Caso contrário, mantém a ordem original
+        return 0;
+    });
+
     return (
         <div className="min-h-screen bg-gray-50">
             <Navbar />
@@ -54,7 +70,7 @@ export default function NaoAssinante() {
 
                 <div className="mt-12 flex justify-center">
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 max-w-7xl">
-                        {products?.map((plan) => {
+                        {sortedProducts?.map((plan) => {
                             // Verificar se product é uma string ou um objeto
                             let productObj: Product;
                             if (typeof plan.product === 'string') {
@@ -81,7 +97,7 @@ export default function NaoAssinante() {
                             // Definir recursos específicos para cada tipo de plano
                             const planFeatures = isPro ? [
                                 { included: true, text: 'Respostas e Questões ilimitadas' },
-                                { included: true, text: 'Acesso ilimitado à IA Avançada' },
+                                { included: true, text: 'Acesso ilimitado à IA Avançada (o3)' },
                                 { included: true, text: 'Geração ilimitada de planos de estudo' },
                                 { included: true, text: 'Suporte prioritário' }
                             ] : [
