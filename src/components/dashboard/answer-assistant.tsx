@@ -195,55 +195,18 @@ export function AnswerAssistant() {
   useEffect(() => {
     if (inputMethod === "text") {
       setQuestionText("");
-    } else if (inputMethod === "image" && aiModel === "o3") {
-      // Reset to default model if in image mode and using advanced model
-      setAiModel("gpt-4.1");
     }
   }, [inputMethod]);
 
   // Função para lidar com a mudança do modelo de IA
   const handleModelChange = (model) => {
-    // Não permitir mudar para o modelo avançado se estiver no modo imagem
-    if (model === "o3" && inputMethod === "image") {
-      toast({
-        variant: "destructive",
-        title: "Modelo não disponível",
-        description: "O modelo IA Avançada não está disponível para processamento de imagens. Use o método de texto.",
-      });
-      return;
-    }
-    
     setAiModel(model);
     
-    if (model === "o3" && userCreditInfo?.tier !== "pro") {
+    if (model === "o3" && userCreditInfo?.tier !== "pro" && userCreditInfo?.tier !== "basic") {
       if (userCreditInfo?.tier === "free" || !userCreditInfo?.tier) {
         setModelError(
           <div>
-            O modelo IA Avançada está disponível apenas para assinantes do plano Pro. <a href="/nao-assinante" className="font-bold text-primary underline">Assine agora</a> e comece a usar a IA Avançada.
-          </div>
-        );
-      } else if (userCreditInfo?.tier === "basic") {
-        setModelError(
-          <div>
-            O modelo IA Avançada está disponível apenas para assinantes do plano Pro. <a 
-              href="#" 
-              onClick={async (e) => {
-                e.preventDefault();
-                try {
-                  const result = await getUserDashboardUrl({
-                    customerId: subscription?.customerId || ""
-                  });
-                  if (result?.url) {
-                    window.location.href = result.url;
-                  }
-                } catch (error) {
-                  console.error("Error getting dashboard URL:", error);
-                }
-              }}
-              className="font-bold text-primary underline"
-            >
-              Atualize seu plano
-            </a> para continuar.
+            O modelo IA Avançada está disponível apenas para assinantes dos planos Basic ou Pro. <a href="/nao-assinante" className="font-bold text-primary underline">Assine agora</a> e comece a usar a IA Avançada.
           </div>
         );
       }
@@ -755,15 +718,14 @@ Leve em consideração este feedback ao formular sua nova resposta. Tente aborda
               <Select 
                 value={aiModel} 
                 onValueChange={handleModelChange}
-                disabled={inputMethod === "image"}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o modelo de IA" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="gpt-4.1">IA Básica</SelectItem>
-                  <SelectItem value="o3" disabled={inputMethod === "image"}>
-                    IA Avançada {userCreditInfo?.tier !== "pro" && "(Pro)"}{inputMethod === "image" && " - Indisponível para imagens"}
+                  <SelectItem value="o3">
+                    IA Avançada {userCreditInfo?.tier !== "pro" && userCreditInfo?.tier !== "basic" && "(Pro/Basic)"}
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -773,13 +735,6 @@ Leve em consideração este feedback ao formular sua nova resposta. Tente aborda
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>{modelError}</AlertDescription>
                 </Alert>
-              )}
-              
-              {inputMethod === "image" && (
-                <p className="text-xs text-amber-500 dark:text-amber-400 mt-1">
-                  <AlertTriangle className="h-3 w-3 inline-block mr-1" />
-                  O processamento de imagens está disponível apenas com o modelo IA Básica.
-                </p>
               )}
             </div>
             
