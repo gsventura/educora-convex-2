@@ -195,7 +195,7 @@ export function AnswerAssistant() {
   useEffect(() => {
     if (inputMethod === "text") {
       setQuestionText("");
-    } else if (inputMethod === "image" && aiModel === "o3-mini") {
+    } else if (inputMethod === "image" && aiModel === "o3") {
       // Reset to default model if in image mode and using advanced model
       setAiModel("gpt-4.1");
     }
@@ -204,7 +204,7 @@ export function AnswerAssistant() {
   // Função para lidar com a mudança do modelo de IA
   const handleModelChange = (model) => {
     // Não permitir mudar para o modelo avançado se estiver no modo imagem
-    if (model === "o3-mini" && inputMethod === "image") {
+    if (model === "o3" && inputMethod === "image") {
       toast({
         variant: "destructive",
         title: "Modelo não disponível",
@@ -215,7 +215,7 @@ export function AnswerAssistant() {
     
     setAiModel(model);
     
-    if (model === "o3-mini" && userCreditInfo?.tier !== "pro") {
+    if (model === "o3" && userCreditInfo?.tier !== "pro") {
       if (userCreditInfo?.tier === "free" || !userCreditInfo?.tier) {
         setModelError(
           <div>
@@ -762,7 +762,7 @@ Leve em consideração este feedback ao formular sua nova resposta. Tente aborda
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="gpt-4.1">IA Básica</SelectItem>
-                  <SelectItem value="o3-mini" disabled={inputMethod === "image"}>
+                  <SelectItem value="o3" disabled={inputMethod === "image"}>
                     IA Avançada {userCreditInfo?.tier !== "pro" && "(Pro)"}{inputMethod === "image" && " - Indisponível para imagens"}
                   </SelectItem>
                 </SelectContent>

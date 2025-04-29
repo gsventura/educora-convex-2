@@ -76,7 +76,7 @@ export function QuestionGenerator() {
   // Verificar se o usuário pode usar o modelo selecionado com base no plano
   useEffect(() => {
     // Verificamos apenas na inicialização do componente
-    if (aiModel === "o3-mini" && userCreditInfo?.tier !== "pro") {
+    if (aiModel === "o3" && userCreditInfo?.tier !== "pro") {
       setAiModel("gpt-4.1");
     }
   }, [userCreditInfo?.tier]);
@@ -88,7 +88,7 @@ export function QuestionGenerator() {
     
     // Se o usuário não for Pro e tentar selecionar o modelo avançado,
     // vamos definir explicitamente a mensagem de erro aqui também
-    if (model === "o3-mini" && userCreditInfo?.tier !== "pro") {
+    if (model === "o3" && userCreditInfo?.tier !== "pro") {
       if (userCreditInfo?.tier === "free" || !userCreditInfo?.tier) {
         setModelError(
           <div>
@@ -312,7 +312,7 @@ export function QuestionGenerator() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="gpt-4.1">IA Básica</SelectItem>
-                  <SelectItem value="o3-mini">IA Avançada {userCreditInfo?.tier !== "pro" && "(Pro)"}</SelectItem>
+                  <SelectItem value="o3">IA Avançada {userCreditInfo?.tier !== "pro" && "(Pro)"}</SelectItem>
                 </SelectContent>
               </Select>
 

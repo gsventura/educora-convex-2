@@ -114,7 +114,7 @@ export default function FAQ() {
                 </CustomAccordionTrigger>
                 <AccordionContent className="pl-4 pr-2 text-gray-600">
                   Oferecemos dois modelos de IA: o modelo padrão (GPT-4.1) disponível para todos os usuários, e 
-                  o modelo avançado (O3-mini) exclusivo para assinantes do plano Pro. O modelo avançado oferece 
+                  o modelo avançado (o3) exclusivo para assinantes do plano Pro. O modelo avançado oferece 
                   maior precisão, contextualização aprimorada e capacidade de gerar questões mais complexas.
                 </AccordionContent>
               </AccordionItem>

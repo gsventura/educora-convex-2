@@ -323,14 +323,14 @@ export function StudyPlans() {
       // Call the OpenAI action to generate a study plan
       const aiResponse = await generateStudyPlanAction({
         prompt,
-        model: "o3-mini",
+        model: "o3",
       });
 
       // Agora enviamos o aiResponse para o backend
       const planResponse = await generateStudyPlanMutation({
         prompt,
         aiResponse,
-        model: "o3-mini",
+        model: "o3",
       });
 
       setGeneratedPlan(aiResponse);
@@ -359,7 +359,7 @@ export function StudyPlans() {
         title: planTitle,
         content: generatedPlan,
         prompt: prompt,
-        model: "o3-mini",
+        model: "o3",
       });
 
       // Close dialog and reset form
